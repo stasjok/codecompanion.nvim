@@ -81,8 +81,8 @@ local function request(opts)
   Curl.get({
     url = url,
     headers = headers,
-    insecure = config.adapters.http.opts.allow_insecure,
-    proxy = config.adapters.http.opts.proxy,
+    insecure = adapter.opts and adapter.opts.allow_insecure or config.adapters.http.opts.allow_insecure,
+    proxy = adapter.opts and adapter.opts.proxy or config.adapters.http.opts.proxy,
     callback = function(response)
       cache.in_progress = false
 
