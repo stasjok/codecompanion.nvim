@@ -328,8 +328,8 @@ function Client:send_sync(payload, opts)
 
   local request_opts = {
     body = body_file,
-    insecure = config.adapters.http.opts.allow_insecure,
-    proxy = config.adapters.http.opts.proxy,
+    insecure = adapter.opts and adapter.opts.allow_insecure or config.adapters.http.opts.allow_insecure,
+    proxy = adapter.opts and adapter.opts.proxy or config.adapters.http.opts.proxy,
     raw = raw,
     timeout = opts.timeout or 120000,
     url = adapter_utils.set_env_vars(adapter, adapter.url),
@@ -408,8 +408,8 @@ function Client:request(payload, actions, opts)
 
   local request_opts = {
     body = body_file,
-    insecure = config.adapters.http.opts.allow_insecure,
-    proxy = config.adapters.http.opts.proxy,
+    insecure = adapter.opts and adapter.opts.allow_insecure or config.adapters.http.opts.allow_insecure,
+    proxy = adapter.opts and adapter.opts.proxy or config.adapters.http.opts.proxy,
     raw = raw,
     url = adapter_utils.set_env_vars(adapter, adapter.url),
     -- Final callback invoked when HTTP request is complete
