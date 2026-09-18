@@ -15,6 +15,7 @@ local CONSTANTS = {
 ---@field name string
 ---@field url string|fun(adapter: CodeCompanion.HTTPAdapter, request_opts?: CodeCompanion.Adapter.ModelFetcher.RequestOpts): string
 ---@field headers? fun(adapter: CodeCompanion.HTTPAdapter, request_opts?: CodeCompanion.Adapter.ModelFetcher.RequestOpts): table|nil
+---@field transform? fun(model: table): (string, CodeCompanion.Adapter.ModelChoice)
 
 local M = {}
 
@@ -26,7 +27,7 @@ local caches = {}
 ---@return { in_progress: boolean, transform: function, models?: table, expires?: number }
 local function cache_for(spec)
   if not caches[spec.name] then
-    local transformer = transform["from_" .. spec.name:lower()]
+    local transformer = spec.transform or transform["from_" .. spec.name:lower()]
     assert(transformer, "No model transformer found for adapter: " .. spec.name)
     caches[spec.name] = { in_progress = false, transform = transformer }
   end
