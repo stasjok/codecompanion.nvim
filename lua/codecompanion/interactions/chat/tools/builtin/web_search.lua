@@ -86,21 +86,43 @@ return {
     },
   },
   output = {
+    ---Returns the command that will be executed
+    ---@param self CodeCompanion.Tool.WebSearch
+    ---@param opts { tools: CodeCompanion.Tools }
+    ---@return string
+    cmd_string = function(self, opts)
+      local query = self.args.query or ""
+      if self.args.domains and #self.args.domains > 0 then
+        return fmt("`%s` on %s", query, table.concat(self.args.domains, ", "))
+      end
+      return query
+    end,
+
     ---@param self CodeCompanion.Tool.WebSearch
     ---@param stdout table The output from the command
     ---@param meta { tools: CodeCompanion.Tools, cmd: table }
     success = function(self, stdout, meta)
+      local query = self.args.query
       local chat = meta.tools.chat
+      local results = stdout[1]
 
-      local content = vim
-        .iter(stdout[1])
+      local attachments = vim
+        .iter(results)
         :map(function(result)
           return fmt([[<attachment url="%s" title="%s">%s</attachment>]], result.url, result.title, result.content)
         end)
         :totable()
-      local llm_output = fmt([[%s]], table.concat(content, "\n"))
+      local llm_output = fmt([[%s]], table.concat(attachments, "\n"))
 
-      chat:add_tool_output(self, { content = llm_output, display = false })
+      local links = vim
+        .iter(results)
+        :map(function(result)
+          return fmt("- [%s](%s)", result.title, result.url)
+        end)
+        :join("\n")
+      local user_output = fmt("Searched the web for `%s`, %d results\n%s", query, #results, links)
+
+      chat:add_tool_output(self, { content = llm_output, display = user_output })
     end,
 
     ---@param self CodeCompanion.Tool.WebSearch
