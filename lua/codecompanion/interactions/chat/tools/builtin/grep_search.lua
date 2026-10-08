@@ -201,7 +201,11 @@ return {
     ---@param opts { tools: CodeCompanion.Tools }
     ---@return string
     cmd_string = function(self, opts)
-      return self.args.query or ""
+      local query = self.args.query or ""
+      if self.args.include_pattern and self.args.include_pattern ~= "" then
+        query = fmt("`%s` in `%s`", query, self.args.include_pattern)
+      end
+      return query
     end,
 
     ---The message which is shared with the user when asking for their approval
@@ -209,7 +213,11 @@ return {
     ---@param meta { tools: CodeCompanion.Tools }
     ---@return nil|string
     prompt = function(self, meta)
-      return fmt("Grep search for `%s`?", self.args.query)
+      local query = self.args.query or ""
+      if self.args.include_pattern and self.args.include_pattern ~= "" then
+        return fmt("Grep search for `%s` in `%s`?", query, self.args.include_pattern)
+      end
+      return fmt("Grep search for `%s`?", query)
     end,
 
     ---@param self CodeCompanion.Tool.GrepSearch
