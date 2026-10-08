@@ -84,6 +84,14 @@ return {
     },
   },
   output = {
+    ---Returns the command that will be executed
+    ---@param self CodeCompanion.Tool.FetchWebpage
+    ---@param opts { tools: CodeCompanion.Tools }
+    ---@return string
+    cmd_string = function(self, opts)
+      return self.args.url
+    end,
+
     ---@param self CodeCompanion.Tool.FetchWebpage
     ---@param stdout table The output from the command
     ---@param meta { tools: CodeCompanion.Tools, cmd: table }
