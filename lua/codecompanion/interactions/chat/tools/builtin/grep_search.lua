@@ -5,14 +5,13 @@ local markdown = require("codecompanion.utils.markdown")
 local fmt = string.format
 
 ---Build the ripgrep command for a search
----@param opts { action: { query: string, is_regexp: boolean?, include_pattern: string? }, max_results?: number, respect_gitignore?: boolean }
+---@param opts { action: { query: string, include_pattern: string? }, max_results?: number, respect_gitignore?: boolean }
 ---@return string[]
 local function build_command(opts)
   local action = opts.action
   local cmd = { "rg" }
   local cwd = vim.fn.getcwd()
   local max_results = opts.max_results or 100
-  local is_regexp = action.is_regexp or false
   local respect_gitignore = opts.respect_gitignore
   if respect_gitignore == nil then
     respect_gitignore = opts.respect_gitignore ~= false
@@ -23,11 +22,6 @@ local function build_command(opts)
   table.insert(cmd, "--line-number")
   table.insert(cmd, "--no-heading")
   table.insert(cmd, "--with-filename")
-
-  -- Regex vs fixed string
-  if not is_regexp then
-    table.insert(cmd, "--fixed-strings")
-  end
 
   -- Case sensitivity
   table.insert(cmd, "--ignore-case")
@@ -72,7 +66,7 @@ local function parse_output(opts)
         data = "No matches found for the query",
       }
     elseif result.code == 2 then
-      log:warn("[Grep Search Tool] Invalid arguments or regex: %s", error_msg)
+      log:debug("[Grep Search Tool] Invalid arguments or regex: %s", error_msg)
       return {
         status = "error",
         data = fmt("Invalid search pattern or arguments: %s", error_msg:match("^[^\n]*") or "Unknown error"),
@@ -163,17 +157,13 @@ return {
   schema = {
     ["function"] = {
       name = "grep_search",
-      description = "Do a text search in the workspace. Use this tool when you know the exact string you're searching for.",
+      description = "Do a pattern search in the workspace. Prefer using this tool when you're searching in the workspace.",
       parameters = {
         type = "object",
         properties = {
           query = {
             type = "string",
-            description = "The pattern to search for in files in the workspace. Can be a regex or plain text pattern",
-          },
-          is_regexp = {
-            type = "boolean",
-            description = "Whether the pattern is a regex. False by default.",
+            description = "The pattern to search for in files in the workspace. Uses ripgrep (not grep). Literal braces need escaping (use `\\{` to find `{`).",
           },
           include_pattern = {
             type = "string",
@@ -220,19 +210,19 @@ return {
       local chat = meta.tools.chat
       local data = stdout[1]
 
-      local llm_output = [[<grepSearchTool>%s
-
-NOTE:
-- The output format is {filepath}:{line_number}.
-- For example:
-/Users/user/project/lua/codecompanion/interactions/chat/tools/init.lua:335
-Refers to line 335 of the init.lua file</grepSearchTool>]]
+      local llm_output = [[<grepSearchTool>%s</grepSearchTool>]]
       local output = vim.iter(stdout):flatten():join("\n")
 
       if type(data) == "table" then
         -- Results were found - data is an array of file paths
         local results = #data
-        local content = fmt("Searched text for `%s`, %d results\n%s", query, results, markdown.form_codeblock(output))
+        local content = fmt(
+          "Searched text for `%s`, %d results\n%s\n\n%s",
+          query,
+          results,
+          markdown.form_codeblock(output),
+          "NOTE: The output format is {filepath}:{line_number}"
+        )
         chat:add_tool_output(self, { content = fmt(llm_output, content) })
       else
         -- No results found - data is a string message
