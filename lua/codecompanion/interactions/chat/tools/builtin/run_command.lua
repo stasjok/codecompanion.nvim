@@ -50,7 +50,11 @@ return cmd_tool({
     ---@param meta { tools: CodeCompanion.Tools }
     ---@return string
     cmd_string = function(self, meta)
-      return self.args.cmd
+      local cmd = self.args.cmd
+      if self.args.flag and self.args.flag ~= "" and self.args.flag ~= vim.NIL then
+        return fmt("`%s` (%s)", cmd, self.args.flag)
+      end
+      return cmd
     end,
 
     ---@param self CodeCompanion.Tool.RunCommand

@@ -94,7 +94,14 @@ local function cmd_tool(spec)
       if stdout then
         local output = vim.iter(stdout[#stdout]):flatten():join("\n")
         local content = fmt("`%s`\n%s", spec.build_cmd(self.args), markdown.form_codeblock(output))
-        return chat:add_tool_output(self, { content = content, display = false })
+        local lines = vim.split(output, "\n")
+        local user_output = fmt(
+          "`%s`\n%s",
+          spec.build_cmd(self.args),
+          markdown.form_codeblock(table.concat(vim.list_slice(lines, 1, 30), "\n"))
+        )
+
+        return chat:add_tool_output(self, { content = content, display = user_output })
       end
       return chat:add_tool_output(self, {
         content = fmt("There was no output from the %s tool", spec.name),
