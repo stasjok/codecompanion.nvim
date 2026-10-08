@@ -41,17 +41,17 @@ local function trim_content(content, tag)
   local prefix = ""
   local suffix = ""
   local start_, end_
-  if tag_row - CONSTANTS.MAX_LINES / 2 < 1 then
+  if tag_row - CONSTANTS.MAX_LINES / 4 < 1 then
     start_ = 1
     end_ = CONSTANTS.MAX_LINES
     suffix = "\n..."
-  elseif tag_row + CONSTANTS.MAX_LINES / 2 > #lines then
+  elseif tag_row + 3 * CONSTANTS.MAX_LINES / 4 > #lines then
     start_ = #lines - CONSTANTS.MAX_LINES
     end_ = #lines
     prefix = "...\n"
   else
-    start_ = tag_row - CONSTANTS.MAX_LINES / 2
-    end_ = tag_row + CONSTANTS.MAX_LINES / 2
+    start_ = tag_row - CONSTANTS.MAX_LINES / 4
+    end_ = tag_row + 3 * CONSTANTS.MAX_LINES / 4
     prefix = "...\n"
     suffix = "\n..."
   end
