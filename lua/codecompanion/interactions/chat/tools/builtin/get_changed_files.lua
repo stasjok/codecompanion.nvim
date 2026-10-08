@@ -130,6 +130,17 @@ return {
     end,
   },
   output = {
+    ---Returns the git states being queried
+    ---@param self CodeCompanion.Tool.GetChangedFiles
+    ---@param meta { tools: CodeCompanion.Tools }
+    ---@return string
+    cmd_string = function(self, meta)
+      if not self.args.source_control_state then
+        return ""
+      end
+      return table.concat(self.args.source_control_state, ", ")
+    end,
+
     ---@param self CodeCompanion.Tool.GetChangedFiles
     ---@param meta { tools: CodeCompanion.Tools }
     prompt = function(self, meta)
