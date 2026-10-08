@@ -299,6 +299,9 @@ return {
     ---@param opts { tools: CodeCompanion.Tools }
     ---@return string
     cmd_string = function(self, opts)
+      if self.args.severity then
+        return fmt("%s (%s)", self.args.filepath, self.args.severity)
+      end
       return self.args.filepath
     end,
 
