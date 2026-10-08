@@ -71,6 +71,16 @@ local function format_range(range)
   return fmt("%d - %d", range.start_line, range.end_line)
 end
 
+---Format the range to append after the path, or '' when neither bound is set
+---@param args { start_line: any, end_line: any }
+---@return string range
+local function format_display_range(args)
+  if args.start_line == nil and args.end_line == nil then
+    return ""
+  end
+  return fmt(" (%s - %s)", args.start_line or 0, args.end_line or "end")
+end
+
 ---Split normalized content without treating a trailing newline as another line
 ---@param content string
 ---@return string[]
@@ -184,7 +194,7 @@ return {
     ---@param opts { tools: CodeCompanion.Tools }
     ---@return string
     cmd_string = function(self, opts)
-      return self.args.filepath
+      return fmt("%s%s", self.args.filepath, format_display_range(self.args))
     end,
 
     ---The message which is shared with the user when asking for their approval
@@ -192,7 +202,8 @@ return {
     ---@param meta { tools: CodeCompanion.Tools }
     ---@return nil|string
     prompt = function(self, meta)
-      return fmt("Read `%s`?", vim.fn.fnamemodify(self.args.filepath, ":."))
+      local path = vim.fn.fnamemodify(self.args.filepath, ":.")
+      return fmt("Read `%s`%s?", path, format_display_range(self.args))
     end,
 
     ---@param self CodeCompanion.Tool.ReadFile
