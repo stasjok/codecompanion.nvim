@@ -196,7 +196,11 @@ return {
     ---@param opts { tools: CodeCompanion.Tools }
     ---@return string
     cmd_string = function(self, opts)
-      return self.args.query or ""
+      local query = self.args.query or ""
+      if self.args.include_pattern and self.args.include_pattern ~= "" then
+        query = fmt("`%s` in `%s`", query, self.args.include_pattern)
+      end
+      return query
     end,
 
     ---The message which is shared with the user when asking for their approval
@@ -204,7 +208,11 @@ return {
     ---@param meta { tools: CodeCompanion.Tools }
     ---@return nil|string
     prompt = function(self, meta)
-      return fmt("Grep search for `%s`?", self.args.query)
+      local query = self.args.query or ""
+      if self.args.include_pattern and self.args.include_pattern ~= "" then
+        return fmt("Grep search for `%s` in `%s`?", query, self.args.include_pattern)
+      end
+      return fmt("Grep search for `%s`?", query)
     end,
 
     ---@param self CodeCompanion.Tool.GrepSearch
@@ -215,24 +223,25 @@ return {
       local chat = meta.tools.chat
       local data = stdout[1]
 
-      local llm_output = [[<grepSearchTool>%s
-
-NOTE:
-- The output format is {filepath}:{line_number}.
-- For example:
-/Users/user/project/lua/codecompanion/interactions/chat/tools/init.lua:335
-Refers to line 335 of the init.lua file</grepSearchTool>]]
+      local llm_output = [[<grepSearchTool>%s</grepSearchTool>]]
       local output = vim.iter(stdout):flatten():join("\n")
 
       if type(data) == "table" then
         -- Results were found - data is an array of file paths
         local results = #data
-        local content = fmt("Searched text for `%s`, %d results\n%s", query, results, markdown.form_codeblock(output))
-        chat:add_tool_output(self, { content = fmt(llm_output, content), display = false })
+        local content = fmt(
+          "Searched text for `%s`, %d results\n%s\n\n%s",
+          query,
+          results,
+          markdown.form_codeblock(output),
+          "NOTE: The output format is {filepath}:{line_number}"
+        )
+        local user_output = fmt("Searched text for `%s`, %d results", query, results)
+        chat:add_tool_output(self, { content = fmt(llm_output, content), display = user_output })
       else
         -- No results found - data is a string message
         local content = fmt("Searched text for `%s`, no results", query)
-        chat:add_tool_output(self, { content = fmt(llm_output, content), display = false })
+        chat:add_tool_output(self, { content = fmt(llm_output, content), display = content })
       end
     end,
 
