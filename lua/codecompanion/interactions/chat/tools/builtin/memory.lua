@@ -491,6 +491,18 @@ return {
     end,
   },
   output = {
+    ---The action to be performed, reused from the approval prompt
+    ---@param self CodeCompanion.Tool.Memory
+    ---@param meta { tools: CodeCompanion.Tools }
+    ---@return string|nil
+    cmd_string = function(self, meta)
+      local message = self.output.prompt(self, meta)
+      if message and vim.endswith(message, "?") then
+        return message:sub(1, -2)
+      end
+      return message
+    end,
+
     ---The message shared with the user when asking for approval
     ---@param self CodeCompanion.Tools.Tool
     ---@param meta { tools: CodeCompanion.Tools }
