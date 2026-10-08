@@ -266,6 +266,15 @@ return {
     end,
   },
   output = {
+    ---Returns the file that will be edited
+    ---@param self CodeCompanion.Tool.EditFile
+    ---@param meta { tools: CodeCompanion.Tools }
+    ---@return string
+    cmd_string = function(self, meta)
+      return self.args.filepath
+    end,
+
+    ---The message which is shared with the user when asking for their approval
     ---@param self CodeCompanion.Tool.EditFile
     ---@param meta { tools: CodeCompanion.Tools }
     ---@return string
