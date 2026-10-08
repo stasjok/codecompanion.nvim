@@ -87,6 +87,18 @@ return {
     },
   },
   output = {
+    ---Returns the command that will be executed
+    ---@param self CodeCompanion.Tool.WebSearch
+    ---@param opts { tools: CodeCompanion.Tools }
+    ---@return string
+    cmd_string = function(self, opts)
+      local query = self.args.query or ""
+      if self.args.domains and #self.args.domains > 0 then
+        return fmt("`%s` on %s", query, table.concat(self.args.domains, ", "))
+      end
+      return query
+    end,
+
     ---@param self CodeCompanion.Tool.WebSearch
     ---@param stdout table The output from the command
     ---@param meta { tools: CodeCompanion.Tools, cmd: table }
